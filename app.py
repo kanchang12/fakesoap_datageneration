@@ -74,5 +74,5 @@ def generate():
     # Example: Return the CSV data as a Flask response
     # return jsonify(data)  # This would return JSON instead of CSV
 
-if __name__ == "__main__":
-    app.run(debug=True)  # Run the Flask app in debug mode
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8080)
