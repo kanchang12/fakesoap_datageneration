@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, make_response
 import random
 
 # Replace these with actual product details (descriptions removed)
@@ -53,6 +53,10 @@ def generate_sales_data(num_records):
 
 app = Flask(__name__)
 
+@app.route("/")
+def home():
+    return render_template("index.html")
+
 @app.route("/generate", methods=["POST"])
 def generate():
     num_records = 1000
@@ -65,14 +69,12 @@ def generate():
     for row in data:
         csv_data += ",".join([str(value) for value in row.values()]) + "\n"
 
-    # You can now use this CSV data for further processing
-    # (e.g., print it, write it to a file, or return it as a response)
+    # Return the CSV data as a Flask response
+    response = make_response(csv_data)
+    response.headers["Content-Disposition"] = "attachment; filename=sales_data.csv"
+    response.headers["Content-Type"] = "text/csv"
+    return response
 
-    # Example: Print the generated CSV data
-    print(csv_data)
+if __name__ == "__main__":
+    app.run(debug=True)  # Run the Flask app in debug mode
 
-    # Example: Return the CSV data as a Flask response
-    # return jsonify(data)  # This would return JSON instead of CSV
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
