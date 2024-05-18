@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fake Soap Sales Generator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-3">
+        <h1>Fake Soap Sales Generator (1000 Records)</h1>
+        <p>Click the button below to generate 1000 random soap sales records.</p>
+        <button type="button" class="btn btn-primary" id="generate-button">Generate Data</button>
+        <div id="message" class="mt-3"></div>
+        <button type="button" class="btn btn-success mt-3" id="download-button" disabled>Download as CSV</button>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $("#generate-button").click(function() {
+                $.ajax({
+                    url: "/generate",
+                    method: "POST",
+                    success: function(data) {
+                        $("#message").html(data);
+                        $("#download-button").prop("disabled", false);
+                    },
+                    error: function(error) {
+                        $("#message").html("Error generating data: " + error.responseText);
+                    }
+                });
+            });
+
+            $("#download-button").click(function() {
+                const data = $("#message").text();
+                const blob = new Blob([data], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'soap_sales_data.csv';
+                a.click();
+            });
+        });
+    </script>
+</body>
+</html>
