@@ -29,44 +29,94 @@
       border: 1px solid #ddd;
       padding: 10px;
       font-size: 16px;
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Fake Soap Sales Generator (1000 Records)</h1>
-    <p>Click the button below to generate 1000 random soap sales records.</p>
+    <h1>Fake Soap Sales Generator (Many Records)</h1>
+    <p>Click the button below to generate random soap sales records.</p>
     <button type="button" class="btn btn-primary" id="generate-button">Generate Data</button>
     <div id="message" class="mt-3"></div>
-    <button type="button" class="btn btn-success mt-3" id="download-button" disabled>Download as CSV</button>
+    <button type="button" class="btn btn-success mt-3" id="download-button" disabled>NOT REQUIRED</button>
   </div>
 
-   <script>
-        $(document).ready(function() {
-            $("#generate-button").click(function() {
-                $.ajax({
-                    url: "/generate",
-                    method: "POST",
-                    success: function(data) {
-                        $("#message").html(data);
-                        $("#download-button").prop("disabled", false);
-                    },
-                    error: function(error) {
-                        $("#message").html("Error generating data: " + error.responseText);
-                    }
-                });
-            });
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const generateButton = document.getElementById("generate-button");
+      const downloadButton = document.getElementById("download-button");
+      const messageDiv = document.getElementById("message");
 
-            $("#download-button").click(function() {
-                const data = $("#message").text();
-                const blob = new Blob([data], { type: 'text/csv' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'soap_sales_data.csv';
-                a.click();
-            });
+      generateButton.addEventListener("click", function() {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/generate", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            const csvData = xhr.responseText;
+            messageDiv.innerHTML = convertCSVToTable(csvData);
+            downloadButton.disabled = false;
+          } else {
+            messageDiv.innerHTML = "Error generating data: " + xhr.responseText;
+          }
+        };
+
+        xhr.send();
+      });
+
+      downloadButton.addEventListener("click", function() {
+        const data = messageDiv.textContent;
+        const blob = new Blob([data], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'soap_sales_data.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      });
+
+      function convertCSVToTable(csv) {
+        const lines = csv.trim().split("\n");
+        const headers = lines[0].split(",");
+        const rows = lines.slice(1);
+
+        let table = "<table><thead><tr>";
+        headers.forEach(header => {
+          table += `<th>${header}</th>`;
         });
-    </script>
+        table += "</tr></thead><tbody>";
+
+        rows.forEach(row => {
+          const columns = row.split(",");
+          table += "<tr>";
+          columns.forEach(column => {
+            table += `<td>${column}</td>`;
+          });
+          table += "</tr>";
+        });
+
+        table += "</tbody></table>";
+        return table;
+      }
+    });
+  </script>
 </body>
 </html>
